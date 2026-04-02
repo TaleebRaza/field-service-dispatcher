@@ -1,0 +1,176 @@
+@import "tailwindcss";
+
+/* ============================================
+   DESIGN SYSTEM — Field Service Dispatcher
+   Dark-first, utilitarian, ATC-inspired
+   ============================================ */
+
+@theme {
+  /* Canvas layers */
+  --color-canvas:   #0d0f11;
+  --color-surface:  #161a1e;
+  --color-card:     #1e2329;
+  --color-card-alt: #242930;
+
+  /* Accent palette */
+  --color-teal:     #1d9e75;
+  --color-teal-dim: #0f6e56;
+  --color-amber:    #EF9F27;
+  --color-amber-dim:#BA7517;
+  --color-red:      #E24B4A;
+  --color-red-dim:  #A32D2D;
+  --color-blue:     #378ADD;
+  --color-blue-dim: #185FA5;
+  --color-purple:   #7F77DD;
+  --color-purple-dim:#534AB7;
+
+  /* Text */
+  --color-text-primary:   #e8e6df;
+  --color-text-secondary: #888780;
+  --color-text-tertiary:  #5F5E5A;
+
+  /* Borders */
+  --color-border:       #2a2e35;
+  --color-border-focus: #444850;
+
+  /* Fonts */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Radius */
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --radius-xl:  16px;
+}
+
+/* ============================================
+   BASE RESET
+   ============================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden; /* Dispatcher is a fixed-height app shell */
+}
+
+/* ============================================
+   TYPOGRAPHY UTILITIES
+   ============================================ */
+
+.font-mono { font-family: var(--font-mono); }
+
+.text-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.text-data {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/* ============================================
+   SCROLLBAR — dark themed, minimal
+   ============================================ */
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-focus);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-tertiary); }
+
+/* ============================================
+   LEAFLET OVERRIDES
+   Leaflet injects its own CSS — we override
+   the parts that clash with our dark theme
+   ============================================ */
+
+.leaflet-container {
+  background: #0d0f11 !important;
+  font-family: var(--font-sans) !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: var(--color-card) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important;
+}
+
+.leaflet-popup-tip {
+  background: var(--color-card) !important;
+}
+
+.leaflet-popup-close-button {
+  color: var(--color-text-secondary) !important;
+}
+
+.leaflet-control-zoom {
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-md) !important;
+  overflow: hidden;
+}
+
+.leaflet-control-zoom a {
+  background: var(--color-card) !important;
+  color: var(--color-text-primary) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: var(--color-card-alt) !important;
+}
+
+.leaflet-bar {
+  box-shadow: none !important;
+}
+
+/* ============================================
+   ANIMATION KEYFRAMES
+   ============================================ */
+
+@keyframes pulse-ring {
+  0%   { transform: scale(1);   opacity: 0.8; }
+  100% { transform: scale(2.4); opacity: 0;   }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(110%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+@keyframes slide-out-right {
+  from { transform: translateX(0);    opacity: 1; }
+  to   { transform: translateX(110%); opacity: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+.animate-pulse-ring  { animation: pulse-ring 1.8s ease-out infinite; }
+.animate-slide-in    { animation: slide-in-right 0.25s ease-out forwards; }
+.animate-slide-out   { animation: slide-out-right 0.25s ease-in forwards; }
+.animate-fade-in     { animation: fade-in 0.2s ease-out forwards; }
