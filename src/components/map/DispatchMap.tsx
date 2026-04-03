@@ -84,35 +84,21 @@ export default function DispatchMap() {
     : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 
   return (
-    <>
-      {/* 1. INJECT CSS DIRECTLY: This makes the animation immune to Vercel's production purger */}
-      <style dangerouslySetInnerHTML={{__html: `
-        .animated-route-line {
-          animation: flowRoute 30s linear infinite;
-        }
-        @keyframes flowRoute {
-          to {
-            stroke-dashoffset: -1000;
-          }
-        }
-      `}} />
+    <MapContainer center={center} zoom={12} style={{ height: '100%', width: '100%', zIndex: 10 }} zoomControl={false}>
+      <TileLayer key={tileUrl} url={tileUrl} />
+      
+      {technicians.map((tech) => (
+        <TechMarker key={tech.id} tech={tech} accent={accent} isDark={isDark} />
+      ))}
 
-      <MapContainer center={center} zoom={12} style={{ height: '100%', width: '100%', zIndex: 10 }} zoomControl={false}>
-        <TileLayer key={tileUrl} url={tileUrl} />
-        
-        {technicians.map((tech) => (
-          <TechMarker key={tech.id} tech={tech} accent={accent} isDark={isDark} />
-        ))}
-
-        {activeRoutes.map(({ tech, job }) => (
-          <RoutePolyline 
-            key={job.id} 
-            startLat={tech.current_lat} startLng={tech.current_lng} 
-            endLat={job.lat} endLng={job.lng} 
-            color={accent}
-          />
-        ))}
-      </MapContainer>
-    </>
+      {activeRoutes.map(({ tech, job }) => (
+        <RoutePolyline 
+          key={job.id} 
+          startLat={tech.current_lat} startLng={tech.current_lng} 
+          endLat={job.lat} endLng={job.lng} 
+          color={accent}
+        />
+      ))}
+    </MapContainer>
   );
 }

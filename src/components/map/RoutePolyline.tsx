@@ -1,46 +1,59 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Polyline } from 'react-leaflet';
-import { getRoute } from '@/lib/osrm';
+import L from 'leaflet';
 
 interface RoutePolylineProps {
   startLat: number;
   startLng: number;
   endLat: number;
   endLng: number;
-  color?: string;
+  color: string;
 }
 
-export default function RoutePolyline({ startLat, startLng, endLat, endLng, color = '#378ADD' }: RoutePolylineProps) {
-  const [positions, setPositions] = useState<[number, number][]>([]);
+export default function RoutePolyline({ startLat, startLng, endLat, endLng, color }: RoutePolylineProps) {
+  const polylineRef = useRef<L.Polyline>(null);
+  const positions: [number, number][] = [[startLat, startLng], [endLat, endLng]];
 
   useEffect(() => {
-    async function fetchAndSetRoute() {
-      const route = await getRoute(startLat, startLng, endLat, endLng);
-      if (route) {
-        setPositions(route.coordinates);
+    // A slight delay ensures Leaflet has fully injected the SVG into the DOM
+    const timeout = setTimeout(() => {
+      if (polylineRef.current) {
+        // Grab the raw SVG <path> element from Leaflet
+        const pathElement = polylineRef.current.getElement();
+        
+        if (pathElement && pathElement.animate) {
+          // Force the animation via the Web Animations API (JS native)
+          pathElement.animate(
+            [
+              { strokeDashoffset: '0' },
+              { strokeDashoffset: '-1000' }
+            ],
+            {
+              duration: 30000, // 30 seconds for a steady flow
+              iterations: Infinity,
+              easing: 'linear'
+            }
+          );
+        }
       }
-    }
+    }, 100);
 
-    // Only fetch if we have valid coordinates
-    if (startLat && startLng && endLat && endLng) {
-      fetchAndSetRoute();
-    }
-  }, [startLat, startLng, endLat, endLng]);
-
-  if (positions.length === 0) return null;
+    return () => clearTimeout(timeout);
+  }, []);
 
   return (
     <Polyline 
+      ref={polylineRef}
       positions={positions} 
       pathOptions={{ 
         color: color, 
         weight: 4, 
         opacity: 0.8,
-        dashArray: '12, 12', // Critical: defines the length of dash and gap
-        lineCap: 'round',
-        className: 'animated-route-line' // Injects our new flowing CSS animation
+        dashArray: '12, 12', // Defines the dashed pattern
+        lineCap: 'round'
+        // Notice we completely removed the className here!
       }} 
     />
   );
