@@ -9,12 +9,10 @@ export default function JobCard({ job }: { job: any }) {
     data: { job },
   });
 
-  // Calculate the highlight color based on priority
   const priorityColor = 
     job.priority === 'urgent' ? '#E24B4A' : 
     job.priority === 'medium' ? '#EF9F27' : '#378ADD';
 
-  // The Ghost effect when the card is being dragged
   const style = {
     opacity: isDragging ? 0.3 : 1,
   };
@@ -22,10 +20,8 @@ export default function JobCard({ job }: { job: any }) {
   return (
     <div 
       ref={setNodeRef} 
-      style={style} 
       {...listeners} 
       {...attributes}
-      // APPLE UI GLASSMORPHISM: backdrop-blur-md, semi-transparent bg, and a dynamic left border
       className={`
         relative overflow-hidden rounded-xl p-4 mb-3 shadow-lg backdrop-blur-md 
         transition-all duration-300 cursor-grab active:cursor-grabbing hover:-translate-y-1 hover:shadow-xl
@@ -40,7 +36,6 @@ export default function JobCard({ job }: { job: any }) {
         borderLeftWidth: '4px'
       }}
     >
-      {/* A subtle glowing gradient strictly for aesthetic polish */}
       <div className="absolute top-0 right-0 w-16 h-16 opacity-10 rounded-full blur-xl pointer-events-none" style={{ backgroundColor: priorityColor }} />
 
       <div className="flex justify-between items-start mb-2 relative z-10">
