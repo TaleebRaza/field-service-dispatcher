@@ -14,7 +14,7 @@ export default function ThemeControls() {
             key={c.name}
             onClick={() => setAccent(c.value)}
             className={`w-4 h-4 rounded-full transition-transform hover:scale-110 ${accent === c.value ? 'ring-2 ring-offset-1 ring-offset-transparent' : ''}`}
-            style={{ backgroundColor: c.value, ringColor: c.value }}
+            style={{ backgroundColor: c.value, '--tw-ring-color': c.value } as React.CSSProperties}
             title={c.name}
           />
         ))}
