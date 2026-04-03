@@ -174,3 +174,66 @@ body {
 .animate-slide-in    { animation: slide-in-right 0.25s ease-out forwards; }
 .animate-slide-out   { animation: slide-out-right 0.25s ease-in forwards; }
 .animate-fade-in     { animation: fade-in 0.2s ease-out forwards; }
+
+/* --- LEAFLET UI OVERRIDES --- */
+
+/* Strip default white box styles from custom markers */
+.leaflet-container .clear-marker-styles {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Ruthlessly strip default backgrounds, shadows, and padding from Tooltips */
+.leaflet-container .leaflet-tooltip.custom-drop-zone-tooltip {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Remove the default triangle arrows from Leaflet Tooltips */
+.leaflet-container .leaflet-tooltip.custom-drop-zone-tooltip::before,
+.leaflet-container .leaflet-tooltip.custom-drop-zone-tooltip::after {
+  display: none !important;
+}
+
+/* --- VIEW TRANSITIONS (SWEEP EFFECT) --- */
+::view-transition-old(root) {
+  animation: none;
+  z-index: 1; /* Keep old view in the back */
+}
+
+::view-transition-new(root) {
+  /* 0.7s duration with a sleek acceleration curve */
+  animation: sweep 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 2; /* Sweep the new view over the top */
+}
+
+@keyframes sweep {
+  from {
+    clip-path: polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%);
+  }
+  to {
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+  }
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--border-glass);
+  border-radius: 10px;
+}
+
+/* --- ROUTE FLOW ANIMATION --- */
+.animated-route-line {
+  /* 30s linear creates a steady, continuous flow of dashes */
+  animation: flowRoute 30s linear infinite;
+}
+
+@keyframes flowRoute {
+  to {
+    /* Moving towards negative offsets pushes the dashes forward along the path */
+    stroke-dashoffset: -1000;
+  }
+}
