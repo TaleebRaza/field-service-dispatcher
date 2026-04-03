@@ -1,0 +1,64 @@
+'use client';
+
+import { useDraggable } from '@dnd-kit/core';
+import StatusBadge from '../ui/StatusBadge';
+
+export default function JobCard({ job }: { job: any }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: job.id,
+    data: { job },
+  });
+
+  // Calculate the highlight color based on priority
+  const priorityColor = 
+    job.priority === 'urgent' ? '#E24B4A' : 
+    job.priority === 'medium' ? '#EF9F27' : '#378ADD';
+
+  // The Ghost effect when the card is being dragged
+  const style = {
+    opacity: isDragging ? 0.3 : 1,
+  };
+
+  return (
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      {...listeners} 
+      {...attributes}
+      // APPLE UI GLASSMORPHISM: backdrop-blur-md, semi-transparent bg, and a dynamic left border
+      className={`
+        relative overflow-hidden rounded-xl p-4 mb-3 shadow-lg backdrop-blur-md 
+        transition-all duration-300 cursor-grab active:cursor-grabbing hover:-translate-y-1 hover:shadow-xl
+        ${isDragging ? 'border-dashed border-[var(--accent)]' : ''}
+      `}
+      style={{ 
+        ...style,
+        backgroundColor: 'var(--bg-glass)', 
+        borderColor: 'var(--border-glass)',
+        borderWidth: '1px',
+        borderLeftColor: priorityColor,
+        borderLeftWidth: '4px'
+      }}
+    >
+      {/* A subtle glowing gradient strictly for aesthetic polish */}
+      <div className="absolute top-0 right-0 w-16 h-16 opacity-10 rounded-full blur-xl pointer-events-none" style={{ backgroundColor: priorityColor }} />
+
+      <div className="flex justify-between items-start mb-2 relative z-10">
+        <h3 className="text-sm font-semibold truncate pr-2">{job.customer_name}</h3>
+        <StatusBadge label={job.priority} type="priority" />
+      </div>
+      
+      <div className="space-y-1 mb-3 relative z-10">
+        <p className="text-xs opacity-70 truncate" title={job.address}>📍 {job.address}</p>
+        <p className="text-xs opacity-70 capitalize">🔧 {job.job_type} • ⏱️ {job.estimated_duration}m</p>
+      </div>
+
+      <div 
+        className="text-[11px] opacity-80 p-2 rounded-lg border line-clamp-2 relative z-10"
+        style={{ backgroundColor: 'rgba(0,0,0,0.2)', borderColor: 'var(--border-glass)' }}
+      >
+        {job.notes}
+      </div>
+    </div>
+  );
+}
