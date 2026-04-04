@@ -4,9 +4,13 @@ import { useDraggable } from '@dnd-kit/core';
 import StatusBadge from '../ui/StatusBadge';
 
 export default function JobCard({ job }: { job: any }) {
+  // 1. THE FIX: Check if the job is completed
+  const isCompleted = job.status === 'completed';
+
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: job.id,
     data: { job },
+    disabled: isCompleted, // 2. THE FIX: Native dnd-kit disable
   });
 
   const priorityColor = 
@@ -20,11 +24,13 @@ export default function JobCard({ job }: { job: any }) {
   return (
     <div 
       ref={setNodeRef} 
-      {...listeners} 
-      {...attributes}
+      // 3. THE FIX: Only attach the invisible drag handles if it's not completed
+      {...(isCompleted ? {} : listeners)} 
+      {...(isCompleted ? {} : attributes)}
       className={`
         relative overflow-hidden rounded-xl p-4 mb-3 shadow-lg backdrop-blur-md 
-        transition-all duration-300 cursor-grab active:cursor-grabbing hover:-translate-y-1 hover:shadow-xl
+        transition-all duration-300 
+        ${isCompleted ? 'cursor-default opacity-60' : 'cursor-grab active:cursor-grabbing hover:-translate-y-1 hover:shadow-xl'}
         ${isDragging ? 'border-dashed border-[var(--accent)]' : ''}
       `}
       style={{ 
