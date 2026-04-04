@@ -50,7 +50,8 @@ export default function KanbanBoard() {
         <div className="flex items-center justify-between mb-3 border-b pb-2" style={{ borderColor: 'var(--accent)' }}>
           <h2 className="text-xs font-mono transition-colors" style={{ color: 'var(--accent)' }}>ACTIVE FIELD UNITS ({active.length})</h2>
         </div>
-        <div className="flex flex-col opacity-80 pointer-events-none">
+        {/* REMOVED pointer-events-none */}
+        <div className="flex flex-col opacity-80">
           {active.map(job => <JobCard key={job.id} job={job} />)}
           {active.length === 0 && (
             <p className="text-xs opacity-50 italic text-center py-4">No active dispatches.</p>
@@ -63,7 +64,8 @@ export default function KanbanBoard() {
         <div className="flex items-center justify-between mb-3 border-b border-[#1d9e75]/30 pb-2" style={{ borderColor: 'rgba(29, 158, 117, 0.4)' }}>
           <h2 className="text-xs font-mono text-[#1d9e75]">COMPLETED ({completed.length})</h2>
         </div>
-        <div className="flex flex-col opacity-50 pointer-events-none grayscale">
+        {/* REMOVED pointer-events-none */}
+        <div className="flex flex-col opacity-50 grayscale">
           {completed.map(job => <JobCard key={job.id} job={job} />)}
           {completed.length === 0 && (
             <p className="text-xs opacity-50 italic text-center py-4">No completed jobs yet.</p>

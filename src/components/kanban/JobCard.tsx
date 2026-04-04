@@ -54,6 +54,21 @@ export default function JobCard({ job }: { job: any }) {
       >
         {job.notes}
       </div>
+
+      {/* THE SIMULATION TRIGGER */}
+      {job.status === 'in_progress' && (
+        <button
+          onPointerDown={(e) => e.stopPropagation()} // Stop DND-kit from stealing the click
+          onClick={() => {
+            console.log("🚀 Firing Simulation Event for:", job.customer_name);
+            window.dispatchEvent(new CustomEvent('START_SIMULATION', { detail: { id: job.id } }));
+          }}
+          className="relative z-20 mt-3 w-full py-2 text-xs font-mono font-bold rounded text-white shadow-lg transition-all hover:scale-[1.02]"
+          style={{ backgroundColor: 'var(--accent)' }}
+        >
+          ▶ INITIATE SIMULATION
+        </button>
+      )}
     </div>
   );
 }

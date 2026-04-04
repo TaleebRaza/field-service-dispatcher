@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createClient } from '@/lib/supabase/client';
 
 interface ToastData {
   id: string;
@@ -14,61 +13,24 @@ export default function SmsToastProvider() {
   const [toasts, setToasts] = useState<ToastData[]>([]);
 
   useEffect(() => {
-    const supabase = createClient();
+    const handleSmsTrigger = (e: any) => {
+      const { type, customerName } = e.detail;
+      const newToast: ToastData = {
+        id: `sms-${Date.now()}-${Math.random()}`,
+        customerName,
+        type
+      };
 
-    // Cleaned up the channel name to prevent WebSocket naming quirks
-    const uniqueChannelName = `sms-toast-${Date.now()}`;
+      console.log("✅ Firing Toast Animation for:", type);
+      setToasts((prev) => [...prev, newToast]);
 
-    const channel = supabase.channel(uniqueChannelName)
-      .on(
-        'postgres_changes',
-        // CHANGED: Listen to ALL events to match the Kanban hook and fix the multiplexer collision
-        { event: '*', schema: 'public', table: 'jobs' },
-        (payload) => {
-          // LOUD DEBUGGING: If the channel is working, this WILL fire on any change
-          console.log("🔥 SMS Provider Event Caught:", payload.eventType, payload);
-
-          // We only care about UPDATE events for SMS notifications
-          if (payload.eventType !== 'UPDATE') return;
-
-          const newStatus = payload.new?.status;
-          const oldStatus = payload.old?.status;
-          
-          let newToast: ToastData | null = null;
-
-          if (newStatus === 'en_route' && oldStatus !== 'en_route') {
-            newToast = {
-              id: payload.new.id + '-enroute-' + Date.now(), 
-              customerName: payload.new.customer_name || 'Customer',
-              type: 'en_route'
-            };
-          } 
-          else if (newStatus === 'completed' && oldStatus !== 'completed') {
-            newToast = {
-              id: payload.new.id + '-completed-' + Date.now(), 
-              customerName: payload.new.customer_name || 'Customer',
-              type: 'completed'
-            };
-          }
-
-          if (newToast) {
-            console.log("✅ Triggering Toast Animation for:", newToast.type);
-            setToasts((prev) => [...prev, newToast as ToastData]);
-
-            setTimeout(() => {
-              setToasts((prev) => prev.filter((t) => t.id !== (newToast as ToastData).id));
-            }, 4000);
-          }
-        }
-      )
-      .subscribe((status, err) => {
-        console.log("📡 SMS Channel Status:", status);
-        if (err) console.error("🚨 SMS Channel Error:", err);
-      });
-
-    return () => {
-      supabase.removeChannel(channel);
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== newToast.id));
+      }, 4000);
     };
+
+    window.addEventListener('TRIGGER_SMS', handleSmsTrigger);
+    return () => window.removeEventListener('TRIGGER_SMS', handleSmsTrigger);
   }, []);
 
   return (
@@ -76,7 +38,7 @@ export default function SmsToastProvider() {
       <AnimatePresence>
         {toasts.map((toast) => {
           const isCompleted = toast.type === 'completed';
-          const themeColor = isCompleted ? '#1d9e75' : '#378ADD';
+          const themeColor = isCompleted ? '#1d9e75' : 'var(--accent)';
           const icon = isCompleted ? '✅' : '💬';
           const message = isCompleted 
             ? "Service completed successfully. Thank you for your business!" 

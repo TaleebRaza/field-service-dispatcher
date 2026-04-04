@@ -66,6 +66,17 @@ export default function DispatchMap() {
       } catch (error) { console.error(error); }
     }
     fetchTechs();
+
+    // THE NATIVE REACT MOVEMENT RECEIVER
+    const handleMove = (e: any) => {
+      const { techId, lat, lng } = e.detail;
+      setTechnicians(prev => prev.map(t => 
+        t.id === techId ? { ...t, current_lat: lat, current_lng: lng } : t
+      ));
+    };
+
+    window.addEventListener('MOVE_MARKER', handleMove);
+    return () => window.removeEventListener('MOVE_MARKER', handleMove);
   }, []);
 
   const activeRoutes = jobs
@@ -94,6 +105,8 @@ export default function DispatchMap() {
       {activeRoutes.map(({ tech, job }) => (
         <RoutePolyline 
           key={job.id} 
+          job={job}   // PASS FULL JOB
+          tech={tech} // PASS FULL TECH
           startLat={tech.current_lat} startLng={tech.current_lng} 
           endLat={job.lat} endLng={job.lng} 
           color={accent}
