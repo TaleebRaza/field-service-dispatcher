@@ -97,7 +97,7 @@ export default function DispatchMap({ setSelectedTech }: { setSelectedTech: (tec
     })
     .filter(route => route.tech !== undefined);
 
-  const center: [number, number] = [33.7744, 72.7128];
+  const center: [number, number] = [34.0522, -118.2437];
   const tileUrl = isDark 
     ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
     : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";

@@ -79,7 +79,17 @@ export default function RoutePolyline({ startLat, startLng, endLat, endLng, colo
 
       // Step 3: Complete Job and fire Green SMS
       window.dispatchEvent(new CustomEvent('TRIGGER_SMS', { detail: { type: 'completed', customerName: job.customer_name } }));
+      
       await supabase.from('jobs').update({ status: 'completed', updated_at: new Date().toISOString() }).eq('id', job.id);
+
+      // 4. THE TELEMETRY FIX: Save the technician's new location permanently to the DB
+      // We do this ONCE at the end of the trip to prevent spamming the database during the drive.
+      await supabase.from('technicians').update({ 
+        current_lat: job.lat, 
+        current_lng: job.lng 
+      }).eq('id', tech.id);
+      
+      console.log(`📍 Database Synced: Unit ${tech.profiles?.full_name || 'Tech'} arrived at ${job.lat}, ${job.lng}`);
     };
 
     window.addEventListener('START_SIMULATION', handleSimulate);

@@ -9,43 +9,48 @@ export async function GET() {
     return NextResponse.json({ error: 'Missing Supabase Admin credentials' }, { status: 500 });
   }
 
-  // Initialize Admin Client to bypass RLS and GoTrue limitations
   const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
+    auth: { autoRefreshToken: false, persistSession: false }
   });
 
   try {
-    // Demo credentials from project requirements
     const usersToCreate = [
       { email: 'dispatcher@demo.com', password: 'demo1234', role: 'dispatcher', name: 'Admin Dispatcher' },
       { email: 'tech1@demo.com', password: 'demo1234', role: 'technician', name: 'Tech One' },
       { email: 'tech2@demo.com', password: 'demo1234', role: 'technician', name: 'Tech Two' }
     ];
 
-    const createdProfiles = [];
+    const processedProfiles = [];
 
     for (const u of usersToCreate) {
-      // 1. Create user safely via GoTrue Admin API
+      let userId;
+
+      // 1. Try to create the user
       const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: u.email,
         password: u.password,
-        email_confirm: true // Force confirmation so they can log in immediately
+        email_confirm: true 
       });
 
+      // 2. Handle the "already registered" error
       if (authError) {
-        if (authError.message.includes('already registered')) {
-          continue; // Skip if we already seeded this user
+        if (authError.message.includes('already') && authError.message.includes('registered')) {
+          const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+          const existingUser = existingUsers.users.find(user => user.email === u.email);
+          if (existingUser) {
+            userId = existingUser.id;
+          } else {
+            throw authError;
+          }
+        } else {
+          throw authError; 
         }
-        throw authError;
+      } else {
+        userId = authData.user.id;
       }
 
-      const userId = authData.user.id;
-
-      // 2. Create the associated profile
-      const { error: profileError } = await supabaseAdmin.from('profiles').insert({
+      // 3. Upsert the profile (id is the Primary Key, so upsert works natively here)
+      const { error: profileError } = await supabaseAdmin.from('profiles').upsert({
         id: userId,
         full_name: u.name,
         role: u.role
@@ -53,23 +58,42 @@ export async function GET() {
 
       if (profileError) throw profileError;
 
-      // 3. If it is a technician, create their live map tracking record
+      // 4. THE CONSTRAINT FIX: Manually check if the tech exists to avoid the constraint error
       if (u.role === 'technician') {
-        const { error: techError } = await supabaseAdmin.from('technicians').insert({
+        const laPayload = {
           profile_id: userId,
-          // Base coordinates set near Wah, Punjab
-          current_lat: 33.7744 + (Math.random() * 0.01), 
-          current_lng: 72.7128 + (Math.random() * 0.01),
+          current_lat: 34.0522 + (Math.random() * 0.08 - 0.04), // LA Offset
+          current_lng: -118.2437 + (Math.random() * 0.08 - 0.04),
           status: 'available'
-        });
-        
-        if (techError) throw techError;
+        };
+
+        // Ask the DB if this tech already has a row
+        const { data: existingTech } = await supabaseAdmin
+          .from('technicians')
+          .select('id')
+          .eq('profile_id', userId)
+          .single();
+
+        if (existingTech) {
+          // They exist! Update their location to LA.
+          const { error: updateError } = await supabaseAdmin
+            .from('technicians')
+            .update(laPayload)
+            .eq('profile_id', userId);
+          if (updateError) throw updateError;
+        } else {
+          // They are new! Insert them into LA.
+          const { error: insertError } = await supabaseAdmin
+            .from('technicians')
+            .insert(laPayload);
+          if (insertError) throw insertError;
+        }
       }
 
-      createdProfiles.push(u.email);
+      processedProfiles.push(u.email);
     }
 
-    return NextResponse.json({ message: 'Seed successful', created: createdProfiles });
+    return NextResponse.json({ message: 'Seed & LA Relocation successful', processed: processedProfiles });
 
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
