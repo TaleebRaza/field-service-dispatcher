@@ -14,4 +14,4 @@ const DispatchMap = dynamic(() => import('./DispatchMap'), {
 // THE FIX: Accept the setter prop and pass it to the dynamic map
 export default function MapWrapper({ setSelectedTech }: { setSelectedTech: (tech: any) => void }) {
   return <DispatchMap setSelectedTech={setSelectedTech} />;
-}
+} 

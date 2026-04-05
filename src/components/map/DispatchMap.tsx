@@ -1,13 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Tooltip } from 'react-leaflet'; // Removed Popup import
+import { MapContainer, TileLayer, Marker, Tooltip, useMapEvents } from 'react-leaflet'; // <-- ADDED useMapEvents
 import { useDroppable } from '@dnd-kit/core';
 import RoutePolyline from './RoutePolyline';
 import { useRealtimeJobs } from '@/hooks/useRealtimeJobs';
 import { useTheme } from '@/components/layout/ThemeProvider';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+
+// 1. THE NEW INTERACTION HANDLER
+// This invisibly listens to the map canvas and fires the global close event
+function MapInteractionHandler() {
+  useMapEvents({
+    dragstart: () => window.dispatchEvent(new CustomEvent('HIDE_BOARD')),
+    click: () => window.dispatchEvent(new CustomEvent('HIDE_BOARD')),
+  });
+  return null;
+}
 
 // 1. THE MARKER FIX: Accept setSelectedTech and strip the Popup
 function TechMarker({ tech, accent, isDark, setSelectedTech }: { tech: any, accent: string, isDark: boolean, setSelectedTech: (tech: any) => void }) {
@@ -94,6 +104,7 @@ export default function DispatchMap({ setSelectedTech }: { setSelectedTech: (tec
 
   return (
     <MapContainer center={center} zoom={12} style={{ height: '100%', width: '100%', zIndex: 10 }} zoomControl={false}>
+      <MapInteractionHandler /> {/* <-- ADDED THIS LINE HERE */}
       <TileLayer key={tileUrl} url={tileUrl} />
       
       {technicians.map((tech) => (

@@ -22,10 +22,12 @@ export default function DispatcherClientShell({ userEmail }: { userEmail: string
 
     window.addEventListener('DRAG_START', hideBoard);
     window.addEventListener('DRAG_END', showBoard);
+    window.addEventListener('HIDE_BOARD', hideBoard); // <-- LISTEN FOR THE MAP TOUCH
 
     return () => {
       window.removeEventListener('DRAG_START', hideBoard);
       window.removeEventListener('DRAG_END', showBoard);
+      window.removeEventListener('HIDE_BOARD', hideBoard);
     };
   }, []);
 
@@ -48,7 +50,6 @@ export default function DispatcherClientShell({ userEmail }: { userEmail: string
           <MapWrapper setSelectedTech={setSelectedTech} />
         </main>
 
-        {/* 1. THE FLOATING OPEN BUTTON ALIGNMENT FIX */}
         {!isBoardOpen && (
           <button
             onClick={() => setIsBoardOpen(true)}
@@ -63,10 +64,8 @@ export default function DispatcherClientShell({ userEmail }: { userEmail: string
           className={`absolute md:relative top-0 left-0 h-full w-[85%] md:w-[30%] min-w-[320px] max-w-[450px] flex flex-col z-40 shadow-[8px_0_30px_rgba(0,0,0,0.2)] border-r backdrop-blur-2xl transition-transform duration-500 ${isBoardOpen ? 'translate-x-0' : '-translate-x-full'}`}
           style={{ backgroundColor: 'var(--bg-glass)', borderColor: 'var(--border-glass)' }}
         >
-          {/* 2. THE HEADER RESPONSIVE UI FIX */}
-          <header className="p-4 border-b flex justify-between items-start gap-2" style={{ borderColor: 'var(--border-glass)' }}>
-            
-            {/* Left Side: min-w-0 prevents text from pushing the buttons off-screen */}
+          {/* 1. CLEANED HEADER: The inline hide button is completely gone! */}
+          <header className="p-4 border-b flex justify-between items-start gap-2 shrink-0" style={{ borderColor: 'var(--border-glass)' }}>
             <div className="min-w-0">
               <h1 className="text-base sm:text-lg font-bold tracking-wide transition-colors truncate" style={{ color: 'var(--accent)' }}>
                 DISPATCH_CONTROL
@@ -79,29 +78,34 @@ export default function DispatcherClientShell({ userEmail }: { userEmail: string
               </div>
             </div>
             
-            {/* Right Side: shrink-0 ensures the buttons never get squished */}
             <div className="flex flex-col items-end gap-3 shrink-0">
               <div className="flex items-center gap-2">
                 <HeaderClock />
                 <LogoutButton />
-                
-                {/* 3. THE UNIVERSAL HIDE BUTTON FIX */}
-                <button 
-                  onClick={() => setIsBoardOpen(false)}
-                  className="px-2 py-1.5 bg-black/20 hover:bg-black/40 border rounded font-mono text-[10px] sm:text-xs opacity-90 transition-all flex items-center gap-1"
-                  style={{ borderColor: 'var(--border-glass)' }}
-                >
-                  <span className="opacity-50">◀</span> HIDE
-                </button>
               </div>
               <ThemeControls />
             </div>
-
           </header>
           
-          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar relative">
             <KanbanBoard />
           </div>
+
+          {/* 2. THE FLOATING HIDE PILL (Bottom Center of the Board) */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+            <button 
+              onClick={() => setIsBoardOpen(false)}
+              className="px-6 py-3 rounded-full shadow-2xl border font-bold text-xs tracking-widest backdrop-blur-xl transition-all hover:scale-105 flex items-center gap-2"
+              style={{ 
+                backgroundColor: 'rgba(0,0,0,0.85)', 
+                borderColor: 'var(--border-glass)', 
+                color: 'var(--text-main)' 
+              }}
+            >
+              <span className="opacity-60">◀</span> HIDE BOARD
+            </button>
+          </div>
+
         </aside>
       </DispatchDndWrapper>
     </div>
