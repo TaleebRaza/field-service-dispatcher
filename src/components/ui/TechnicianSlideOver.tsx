@@ -38,7 +38,8 @@ export default function TechnicianSlideOver({ tech, onClose }: TechnicianSlideOv
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: '100%', opacity: 0.5 }}
       transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className="absolute top-0 right-0 h-full w-[380px] z-[9999] p-6 shadow-2xl border-l flex flex-col"
+      // THE FIX: Changed w-[380px] to w-full md:w-[380px]
+      className="absolute top-0 right-0 h-full w-full md:w-[380px] z-[9999] p-6 shadow-2xl border-l flex flex-col"
       style={{ 
         backgroundColor: 'var(--bg-glass)', 
         backdropFilter: 'blur(24px)',              

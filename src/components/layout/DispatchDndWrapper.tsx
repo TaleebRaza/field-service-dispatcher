@@ -1,18 +1,45 @@
 'use client';
 
 import { useState } from 'react';
-import { DndContext, DragEndEvent, DragStartEvent, pointerWithin, DragOverlay } from '@dnd-kit/core';
+import { 
+  DndContext, 
+  DragEndEvent, 
+  DragStartEvent, 
+  pointerWithin, 
+  DragOverlay,
+  useSensor,
+  useSensors,
+  MouseSensor,
+  TouchSensor
+} from '@dnd-kit/core';
 
 export default function DispatchDndWrapper({ children }: { children: React.ReactNode }) {
-  // State to track which job is currently being dragged for the overlay
   const [activeJob, setActiveJob] = useState<any | null>(null);
+
+  // 1. THE MOBILE FIX: Configure explicit Touch and Mouse sensors
+  const mouseSensor = useSensor(MouseSensor, {
+    activationConstraint: { distance: 5 }, // Requires 5px of movement to start a drag
+  });
+  
+  const touchSensor = useSensor(TouchSensor, {
+    activationConstraint: {
+      delay: 250, // Requires a 250ms "long press" before dragging starts on mobile
+      tolerance: 5, // Allows 5px of thumb wiggle room during the press
+    },
+  });
+
+  const sensors = useSensors(mouseSensor, touchSensor);
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveJob(event.active.data.current?.job);
+    // THE FIX: Fire a global event when picking up a card
+    window.dispatchEvent(new CustomEvent('DRAG_START'));
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
-    setActiveJob(null); // Clear the overlay
+    setActiveJob(null); 
+    // THE FIX: Fire a global event when dropping a card
+    window.dispatchEvent(new CustomEvent('DRAG_END'));
     
     const { active, over } = event;
     if (!over) return;
@@ -35,15 +62,22 @@ export default function DispatchDndWrapper({ children }: { children: React.React
     }
   };
 
+  // Add a cancel handler just in case they drop it where there is no target
+  const handleDragCancel = () => {
+    setActiveJob(null);
+    window.dispatchEvent(new CustomEvent('DRAG_END'));
+  };
+
   return (
     <DndContext 
+      sensors={sensors}
       onDragStart={handleDragStart} 
       onDragEnd={handleDragEnd} 
+      onDragCancel={handleDragCancel}
       collisionDetection={pointerWithin}
     >
       {children}
       
-      {/* The floating overlay that escapes the scrolling sidebar */}
       <DragOverlay dropAnimation={{ duration: 250, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
         {activeJob ? (
           <div 
